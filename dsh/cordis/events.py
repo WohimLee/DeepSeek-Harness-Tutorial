@@ -49,6 +49,13 @@ class EventsService:
     ) -> Effect:
         """Register a listener as an Effect owned by the calling Context."""
 
+        self.root.logger("cordis.events").debug(
+            "listener on event=%s fiber=%s prepend=%s global=%s",
+            name,
+            context.fiber.uid,
+            prepend,
+            global_,
+        )
         self.emit_safe(
             "internal/listener",
             context,
@@ -85,6 +92,13 @@ class EventsService:
     ) -> Effect:
         """Register a listener that removes itself before its first call."""
 
+        self.root.logger("cordis.events").debug(
+            "listener once event=%s fiber=%s prepend=%s global=%s",
+            name,
+            context.fiber.uid,
+            prepend,
+            global_,
+        )
         self.emit_safe(
             "internal/listener",
             context,
@@ -141,6 +155,7 @@ class EventsService:
     ) -> object:
         """Compose synchronous listeners around a final callback."""
 
+        self.root.logger("cordis.events").debug("dispatch mode=waterfall_sync event=%s", name)
         callbacks = self._callbacks(name)
 
         def dispatch(index: int) -> object:
@@ -160,6 +175,7 @@ class EventsService:
     def emit(self, name: str, *args: object) -> None:
         """Synchronously notify every listener in registration order."""
 
+        self.root.logger("cordis.events").debug("dispatch mode=emit event=%s", name)
         if not name.startswith("internal/"):
             self.emit_safe("internal/dispatch", "emit", name, args)
         for callback in self._callbacks(name):
@@ -172,6 +188,7 @@ class EventsService:
     def bail(self, name: str, *args: object) -> object:
         """Return the first synchronous bail value."""
 
+        self.root.logger("cordis.events").debug("dispatch mode=bail event=%s", name)
         if not name.startswith("internal/"):
             self.emit_safe("internal/dispatch", "bail", name, args)
         for callback in self._callbacks(name):
@@ -187,6 +204,7 @@ class EventsService:
     async def serial(self, name: str, *args: object) -> object:
         """Await listeners in order and return the first bail value."""
 
+        self.root.logger("cordis.events").debug("dispatch mode=serial event=%s", name)
         if not name.startswith("internal/"):
             self.emit_safe("internal/dispatch", "serial", name, args)
         for callback in self._callbacks(name):
@@ -200,6 +218,7 @@ class EventsService:
     async def parallel(self, name: str, *args: object) -> None:
         """Run all listeners concurrently and aggregate failures."""
 
+        self.root.logger("cordis.events").debug("dispatch mode=parallel event=%s", name)
         if not name.startswith("internal/"):
             self.emit_safe("internal/dispatch", "parallel", name, args)
 
@@ -224,6 +243,7 @@ class EventsService:
     ) -> object:
         """Compose listeners as async around-middleware."""
 
+        self.root.logger("cordis.events").debug("dispatch mode=waterfall event=%s", name)
         if not name.startswith("internal/"):
             self.emit_safe("internal/dispatch", "waterfall", name, args)
         callbacks = self._callbacks(name)

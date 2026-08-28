@@ -16,7 +16,9 @@
       "console": "integratedTerminal",
       "justMyCode": true,
       "env": {
-        "PYTHONASYNCIODEBUG": "1"
+        "PYTHONASYNCIODEBUG": "1",
+        "DSH_CORDIS_LOG": "1",
+        "DSH_CORDIS_LOG_LEVEL": "DEBUG"
       }
     },
     {
@@ -33,7 +35,9 @@
       "console": "integratedTerminal",
       "justMyCode": true,
       "env": {
-        "PYTHONASYNCIODEBUG": "1"
+        "PYTHONASYNCIODEBUG": "1",
+        "DSH_CORDIS_LOG": "1",
+        "DSH_CORDIS_LOG_LEVEL": "DEBUG"
       }
     },
     {
@@ -51,7 +55,9 @@
       "console": "integratedTerminal",
       "justMyCode": true,
       "env": {
-        "PYTHONASYNCIODEBUG": "1"
+        "PYTHONASYNCIODEBUG": "1",
+        "DSH_CORDIS_LOG": "1",
+        "DSH_CORDIS_LOG_LEVEL": "DEBUG"
       }
     },
     {
@@ -68,7 +74,9 @@
       "console": "integratedTerminal",
       "justMyCode": true,
       "env": {
-        "PYTHONASYNCIODEBUG": "1"
+        "PYTHONASYNCIODEBUG": "1",
+        "DSH_CORDIS_LOG": "1",
+        "DSH_CORDIS_LOG_LEVEL": "DEBUG"
       }
     },
     {
@@ -85,7 +93,9 @@
       "console": "integratedTerminal",
       "justMyCode": true,
       "env": {
-        "PYTHONASYNCIODEBUG": "1"
+        "PYTHONASYNCIODEBUG": "1",
+        "DSH_CORDIS_LOG": "1",
+        "DSH_CORDIS_LOG_LEVEL": "DEBUG"
       }
     },
     {
@@ -102,7 +112,9 @@
       "console": "integratedTerminal",
       "justMyCode": true,
       "env": {
-        "PYTHONASYNCIODEBUG": "1"
+        "PYTHONASYNCIODEBUG": "1",
+        "DSH_CORDIS_LOG": "1",
+        "DSH_CORDIS_LOG_LEVEL": "DEBUG"
       }
     }
   ]

@@ -78,6 +78,10 @@ class Context:
 
         from .service import bind_service
 
+        self.root.logger("cordis.context").debug(
+            "get service=%s caller_fiber=%s", name, self.fiber.uid
+        )
+
         def resolve() -> object:
             accessor = self.root.reflect.accessor_record(name)
             if accessor is not None:

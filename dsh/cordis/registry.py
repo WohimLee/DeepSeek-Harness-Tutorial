@@ -69,6 +69,12 @@ class RegistryService:
             self._runtimes[spec.callback] = runtime
         self._counter += 1
         fiber = Fiber(self._counter, context, runtime, config)
+        context.root.logger("cordis.registry").info(
+            "mount fiber=%s plugin=%s inject=%s",
+            fiber.uid,
+            spec.name,
+            tuple(spec.inject),
+        )
         runtime.fibers.add(fiber)
         for name in spec.inject:
             self._dependents.setdefault(name, set()).add(fiber)
@@ -89,6 +95,9 @@ class RegistryService:
     def remove(self, fiber: Fiber) -> None:
         """Remove a disposed Fiber from every registry index."""
 
+        self.root.logger("cordis.registry").debug(
+            "remove fiber=%s plugin=%s", fiber.uid, fiber.name
+        )
         runtime = fiber.runtime
         runtime.fibers.discard(fiber)
         for name in runtime.spec.inject:

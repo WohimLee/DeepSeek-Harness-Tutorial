@@ -31,6 +31,34 @@ uv run pytest dsh/cordis/tests
 Cordis 是运行时基础设施，不直接向模型提供 prompt、schema 或消息，因此没有直接 Model
 Experience，也不改变模型请求前缀或 KV Cache。
 
+## 诊断日志
+
+Cordis 内置结构化 Logger，并可选择通过 Loguru 输出生命周期诊断。默认关闭，不会产生
+终端日志；VS Code 仓库内的 F5 配置默认以 `DEBUG` 级别开启。
+
+```bash
+DSH_CORDIS_LOG=1 DSH_CORDIS_LOG_LEVEL=DEBUG uv run pytest dsh/cordis/tests -s
+```
+
+`DSH_CORDIS_LOG` 接受 `1`、`true`、`yes` 或 `on`。日志级别支持 `DEBUG`、`INFO`、
+`WARNING` 和 `ERROR`。不设置 `DSH_CORDIS_LOG`，或将其设为 `0`，即可整体关闭。
+
+也可以在运行时控制：
+
+```python
+from dsh.cordis import Context, LogLevel
+
+ctx = Context()
+ctx.logger.enable_loguru(LogLevel.DEBUG)
+
+# 调试结束后异步撤销 Loguru exporter
+await ctx.logger.disable_loguru()
+```
+
+当前关键日志覆盖插件挂载、Fiber 刷新与状态迁移、依赖等待、激活/卸载、服务注册与移除、
+依赖通知、事件调度和 Context 服务解析。日志只记录名称、Fiber UID、状态及依赖关系，不
+输出模型正文或原始配置内容。
+
 ## Known Limitations and Deferred Work
 
 - 当前契约测试以 Python Harness 所需语义为边界，尚未形成与上游 vendored Cordis 全部测试
