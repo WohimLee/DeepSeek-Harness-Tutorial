@@ -11,6 +11,8 @@
 - 新插件遵循 [`plugin-development.md`](plugin-development.md)；一个插件是独立生命周期单元，
   不等同于上游的每一个源码文件。
 - 每次迁移更新本表，并在“证据”列链接本仓库测试或记录上游来源。
+- 每个已验证里程碑都要能通过 VS Code 的长期入口 `Harness: 当前阶段` 按 F5 调试；重要
+  调用链同时在 [`debugging.md`](debugging.md) 保留阶段专属配置、断点路线和观察项。
 
 ## 路线图
 

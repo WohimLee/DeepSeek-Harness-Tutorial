@@ -55,6 +55,9 @@ uv run ruff check .
 uv run mypy dsh
 ```
 
+使用 VS Code 时可直接从“运行和调试”视图选择 Harness、Cordis 生命周期或当前 pytest
+文件后按 F5；断点建议和状态观察项见 [F5 调试指南](docs/debugging.md)。
+
 最小 Cordis 示例：
 
 ```python
