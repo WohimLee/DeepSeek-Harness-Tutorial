@@ -8,8 +8,9 @@ DeepSeek Harness Python（`deepseek-harness-py`）是对原 TypeScript 项目
 Loop、能力提供方和应用入口都由插件组合。这个仓库延续“一切皆插件”的设计，并使用
 `asyncio`、类型标注和 Python 原生协议表达相同的生命周期与扩展机制。
 
-> 当前状态：基础设施初始化阶段。`dsh/cordis` 已有 Python 实现，其余 Harness
-> 子系统将按迁移台账逐步落地。项目尚未承诺稳定 API 或数据格式兼容性。
+> 当前状态：最小 Harness 主干建设阶段。`dsh.cordis` 已通过 Harness 生命周期基线，
+> `dsh.llm`、`dsh.llm_scripted` 与内存 `dsh.session` 已完成首条 keyless 日志投影竖切。
+> 项目尚未承诺稳定 API 或数据格式兼容性。
 
 ## 目标
 
@@ -80,7 +81,8 @@ asyncio.run(main())
 ## 开发方式
 
 开始改动前先阅读 [AGENTS.md](AGENTS.md) 和
-[架构文档](docs/architecture.md)。移植新模块时，在
+[架构文档](docs/architecture.md)；新增插件遵循
+[插件开发规范](docs/plugin-development.md)。移植新模块时，在
 [迁移台账](docs/porting.md) 中记录来源、Python 落点和验证证据；非局部设计决策先在
 `.agents/notes/{lifecycle}/{class}/` 记录 Agent Note；重大未来方案从 `proposed/` 开始，
 随改动完成的决定记录在 `implemented/`。

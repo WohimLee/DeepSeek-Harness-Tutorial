@@ -6,8 +6,9 @@
 
 ## 当前边界
 
-目前已实现 `dsh.cordis` 及其声明式配置 loader。Harness 核心、LLM、工具、会话和应用
-组装仍处于规划阶段。因此下文除 Cordis 章节外描述的是目标架构，具体进度以
+目前已实现 `dsh.cordis` 及其声明式配置 loader、最小 `dsh.llm` adapter registry 与流协议、
+确定性 `dsh.llm_scripted` Provider，以及只追加的内存 `dsh.session` 和消息投影。System
+Prompt、Agent、Tools、Agent Loop 和应用组装仍处于规划阶段，具体进度以
 [`porting.md`](porting.md) 为准。
 
 ## 分层
@@ -42,6 +43,11 @@ Definition，不直接导入 Provider。Provider 可以替换而不修改 Agent 
 关键不变量：插件贡献的资源由其 Fiber 所有；插件卸载后不可继续解析其服务或收到其监听；
 依赖未满足时插件不激活；激活失败必须回滚本轮已安装的 Effect。
 
+插件可以通过 `ctx.plugin()` 挂载子插件，Loader entry 也可以声明 `children`。子 Fiber 由父
+Fiber 的 EffectScope 所有，因此父卸载会递归卸载整棵子树。父子关系只表达生命周期所有权；
+它不同于 `inject` 服务依赖和 Definition / Provider / Consumer 架构关系。具体使用规则见
+[插件开发规范的父子插件章节](plugin-development.md#34-父子插件与-fiber-所有权)。
+
 ## Harness 核心（规划中）
 
 核心由五个可独立测试与替换的部分构成：
@@ -67,6 +73,10 @@ Definition，不直接导入 Provider。Provider 可以替换而不修改 Agent 
 
 默认值与配置归拥有它的 Provider；Consumer 不猜测 Provider 行为。部署可变参数来自经验证的
 插件配置，协议常量和安全不变量可以固定在代码中。
+
+官方插件采用一个 distribution 下的独立 `dsh.<plugin_name>` import package，并统一导出
+`plugin` 入口。Definition、Provider、Consumer 的拆包条件、标准文件树、配置 ABI、外部
+插件布局和验收清单见[插件开发规范](plugin-development.md)。
 
 ## 事件与状态
 

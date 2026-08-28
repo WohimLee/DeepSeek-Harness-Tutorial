@@ -5,6 +5,9 @@
 [`docs/porting.md`](docs/porting.md)。原 TypeScript 仓库是行为基准，不是可以照搬的
 Python 设计模板。
 
+新增或拆分 Harness 插件前必须阅读 [`docs/plugin-development.md`](docs/plugin-development.md)；
+它定义统一入口、目录组织、能力角色、生命周期和测试要求。
+
 ## 优先级
 
 1. 可观察行为与生命周期语义正确。
@@ -18,6 +21,7 @@ Python 设计模板。
 ## 架构规则
 
 - 一切产品行为通过 Cordis 插件组装；不要引入绕过插件生命周期的全局单例。
+- 每个官方插件从 `dsh.<plugin_name>` 导出唯一 `plugin` 入口；不要用模块导入副作用注册。
 - 注册即副作用。事件监听、服务、工具和其他贡献必须由当前 Fiber 的 Effect 所有，卸载
   插件时必须撤销。
 - 新能力按 Service Definition、Provider、Consumer 三个角色设计。角色可以同包实现，
@@ -38,6 +42,7 @@ Python 设计模板。
 - 包内使用相对导入，跨 `dsh` 子系统使用绝对导入；运行时代码不得修改 `sys.path`。
 - 模块与公共导出需要说明非显然的行为、失败方式、时序或所有权，不写逐行复述代码的
   注释。
+- 插件单元测试放在 `dsh/<plugin_name>/tests/`；根 `tests/` 只放跨插件组合与应用级测试。
 - 文件以一个换行符结束。不要提交 `.venv`、缓存、覆盖率数据、凭据或本机绝对路径。
 
 ## 测试与验收
@@ -58,7 +63,7 @@ uv run mypy dsh
 
 ## 移植流程
 
-1. 在 `docs/porting.md` 标记上游模块、职责、依赖和目标 Python 模块。
+1. 在 `docs/porting.md` 标记上游模块、插件角色、依赖和目标 Python 模块。
 2. 从上游测试及文档提取可观察行为，先确定 Python 接口与失败语义。
 3. 实现 Definition → Provider → Consumer，并通过 Cordis 组合，不跨层直连。
 4. 添加测试，记录尚未支持的差异；只有证据齐全后才标为完成。
