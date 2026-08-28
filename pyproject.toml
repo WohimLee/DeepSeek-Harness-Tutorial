@@ -1,0 +1,49 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "deepseek-harness-py"
+version = "0.1.0"
+description = "A Python reimplementation of DeepSeek Harness"
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [{ name = "DeepSeek Harness Python contributors" }]
+keywords = ["agent", "deepseek", "harness", "llm", "plugins"]
+classifiers = [
+  "Development Status :: 2 - Pre-Alpha",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.12",
+  "Typing :: Typed",
+]
+dependencies = ["PyYAML>=6.0.2,<7"]
+
+[dependency-groups]
+dev = [
+  "mypy>=1.15,<2",
+  "pytest>=8.3,<9",
+  "pytest-asyncio>=0.25,<1",
+  "ruff>=0.9,<1",
+  "types-PyYAML>=6.0.12,<7",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["dsh"]
+
+[tool.pytest.ini_options]
+addopts = "-ra --strict-config --strict-markers"
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "ASYNC", "RUF"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+packages = ["dsh"]
+warn_unreachable = true
