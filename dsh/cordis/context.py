@@ -12,7 +12,6 @@ from .model import Plugin
 if TYPE_CHECKING:
     from .events import EventsService
     from .fiber import Fiber, RootFiber
-    from .logger import Exporter, LoggerService
     from .reflect import ReflectService
     from .registry import RegistryService
 
@@ -23,7 +22,6 @@ class Context:
     def __init__(self) -> None:
         from .events import EventsService
         from .fiber import RootFiber
-        from .logger import LoggerService
         from .reflect import ReflectService
         from .registry import RegistryService
 
@@ -34,7 +32,6 @@ class Context:
         self.registry: RegistryService = RegistryService(self)
         self.reflect: ReflectService = ReflectService(self)
         self.events: EventsService = EventsService(self)
-        self.logger: LoggerService = LoggerService(self)
 
     @classmethod
     def derive(cls, parent: Context, fiber: Fiber | None = None) -> Context:
@@ -46,7 +43,6 @@ class Context:
         context.registry = parent.root.registry
         context.reflect = parent.root.reflect
         context.events = parent.root.events
-        context.logger = parent.root.logger
         return context
 
     def extend(self) -> Context:
@@ -78,9 +74,6 @@ class Context:
 
         from .service import bind_service
 
-        self.root.logger("cordis.context").debug(
-            "get service=%s caller_fiber=%s", name, self.fiber.uid
-        )
 
         def resolve() -> object:
             accessor = self.root.reflect.accessor_record(name)
@@ -140,11 +133,6 @@ class Context:
         """Bind callback diagnostics to this Context."""
 
         return self.root.reflect.bind(self, callback)
-
-    def exporter(self, exporter: Exporter) -> Effect:
-        """Register a lifecycle-owned log exporter."""
-
-        return self.logger.exporter(self, exporter)
 
     def effect(self, setup: EffectSetup, label: str = "anonymous") -> Effect:
         """Install a synchronous-setup Effect on the current Fiber."""

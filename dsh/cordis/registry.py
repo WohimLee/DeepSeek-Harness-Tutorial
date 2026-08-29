@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 from .errors import CordisError, CordisErrorCode
+from .logger import logger
 from .model import Plugin, PluginSpec, normalize_inject
 
 if TYPE_CHECKING:
@@ -69,8 +70,8 @@ class RegistryService:
             self._runtimes[spec.callback] = runtime
         self._counter += 1
         fiber = Fiber(self._counter, context, runtime, config)
-        context.root.logger("cordis.registry").info(
-            "mount fiber=%s plugin=%s inject=%s",
+        logger.info(
+            "mount fiber={} plugin={} inject={}",
             fiber.uid,
             spec.name,
             tuple(spec.inject),
@@ -95,9 +96,6 @@ class RegistryService:
     def remove(self, fiber: Fiber) -> None:
         """Remove a disposed Fiber from every registry index."""
 
-        self.root.logger("cordis.registry").debug(
-            "remove fiber=%s plugin=%s", fiber.uid, fiber.name
-        )
         runtime = fiber.runtime
         runtime.fibers.discard(fiber)
         for name in runtime.spec.inject:

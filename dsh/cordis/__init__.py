@@ -6,7 +6,7 @@ from .effect import Effect, EffectMeta, EffectScope
 from .errors import CordisError, CordisErrorCode
 from .events import EventsService, is_bailed
 from .fiber import Fiber, FiberState
-from .logger import Exporter, Logger, LoggerService, LogLevel, LogMessage, LoguruExporter
+from .logger import is_cordis_logging_enabled, logger, set_cordis_logging
 from .model import inject
 from .service import Service
 from .typing import PluginContext, PluginFunction, PluginObject
@@ -22,14 +22,8 @@ __all__ = [
     "EffectMeta",
     "EffectScope",
     "EventsService",
-    "Exporter",
     "Fiber",
     "FiberState",
-    "LogLevel",
-    "LogMessage",
-    "Logger",
-    "LoggerService",
-    "LoguruExporter",
     "PluginContext",
     "PluginFunction",
     "PluginObject",
@@ -38,4 +32,7 @@ __all__ = [
     "__version__",
     "inject",
     "is_bailed",
+    "is_cordis_logging_enabled",
+    "logger",
+    "set_cordis_logging",
 ]

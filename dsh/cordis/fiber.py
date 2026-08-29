@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING, cast
 from .config import validate_config
 from .effect import EffectScope
 from .errors import CordisError, CordisErrorCode
+from .logger import logger
 
 if TYPE_CHECKING:
     from .context import Context
@@ -134,8 +135,8 @@ class Fiber:
         if old_state is state:
             return
         self.state = state
-        self.parent.root.logger("cordis.fiber").info(
-            "state fiber=%s plugin=%s %s->%s",
+        logger.info(
+            "fiber={} plugin={} state={}->{}",
             self.uid,
             self.name,
             old_state.value,
@@ -148,12 +149,6 @@ class Fiber:
 
         if self._dispose_requested:
             return
-        self.parent.root.logger("cordis.fiber").debug(
-            "refresh requested fiber=%s plugin=%s state=%s",
-            self.uid,
-            self.name,
-            self.state.value,
-        )
         self._refresh_requested = True
         if self._refresh_task is None or self._refresh_task.done():
             self._refresh_task = asyncio.create_task(self._refresh_loop())
@@ -174,9 +169,6 @@ class Fiber:
         while self._refresh_requested and not self._dispose_requested:
             self._refresh_requested = False
             async with self._lifecycle_lock:
-                self.parent.root.logger("cordis.fiber").debug(
-                    "refresh begin fiber=%s plugin=%s", self.uid, self.name
-                )
                 await self._refresh_once()
 
     def _resolve_dependencies(self) -> tuple[dict[str, Implementation], tuple[int, ...]] | None:
@@ -193,8 +185,8 @@ class Fiber:
     async def _refresh_once(self) -> None:
         resolution = self._resolve_dependencies()
         if resolution is None:
-            self.parent.root.logger("cordis.fiber").debug(
-                "dependencies pending fiber=%s plugin=%s required=%s",
+            logger.info(
+                "fiber={} plugin={} waiting for services={}",
                 self.uid,
                 self.name,
                 tuple(self.runtime.spec.inject),
@@ -221,8 +213,8 @@ class Fiber:
         dependencies: dict[str, Implementation],
         epoch: tuple[int, ...],
     ) -> None:
-        self.parent.root.logger("cordis.fiber").debug(
-            "activate fiber=%s plugin=%s epoch=%s dependencies=%s",
+        logger.info(
+            "activate fiber={} plugin={} epoch={} services={}",
             self.uid,
             self.name,
             epoch,
@@ -256,11 +248,10 @@ class Fiber:
                 label = self.parent.root.reflect.label(self.context, name)
                 self.parent.root.reflect.notify_soon(name, label)
         except BaseException as error:
-            self.parent.root.logger("cordis.fiber").error(
-                "activation failed fiber=%s plugin=%s",
+            logger.opt(exception=error).error(
+                "activation failed fiber={} plugin={}",
                 self.uid,
                 self.name,
-                exception=error,
             )
             self.error = error
             self._failed_epoch = epoch
@@ -294,12 +285,6 @@ class Fiber:
         return callback(self.context, self.config)
 
     async def _unload(self) -> None:
-        self.parent.root.logger("cordis.fiber").debug(
-            "unload fiber=%s plugin=%s effects=%s",
-            self.uid,
-            self.name,
-            len(self.effects.effects),
-        )
         self._set_state(FiberState.UNLOADING)
         try:
             await self.effects.close()

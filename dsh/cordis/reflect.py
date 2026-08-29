@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 
 from .effect import Effect
 from .errors import CordisError, CordisErrorCode
+from .logger import logger
 
 if TYPE_CHECKING:
     from .context import Context
@@ -115,14 +116,10 @@ class ReflectService:
                 )
             self._implementations[label] = implementation
             context.fiber.provided_names.add(name)
-            self.root.logger("cordis.service").info(
-                "provide service=%s fiber=%s", name, context.fiber.uid
-            )
+            logger.info("provide service={} fiber={}", name, context.fiber.uid)
 
             async def cleanup() -> None:
-                self.root.logger("cordis.service").info(
-                    "remove service=%s fiber=%s", name, context.fiber.uid
-                )
+                logger.info("remove service={} fiber={}", name, context.fiber.uid)
                 if self._implementations.get(label) is implementation:
                     del self._implementations[label]
                 context.fiber.provided_names.discard(name)
@@ -224,9 +221,6 @@ class ReflectService:
             for fiber in self.root.registry.dependents(name)
             if self.label(fiber.context, name) is label
         ]
-        self.root.logger("cordis.service").debug(
-            "notify service=%s dependents=%s", name, tuple(fiber.uid for fiber in fibers)
-        )
         for fiber in fibers:
             fiber.request_refresh()
         if fibers:

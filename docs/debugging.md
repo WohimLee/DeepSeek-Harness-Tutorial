@@ -8,9 +8,9 @@ uv sync --dev
 
 然后打开“运行和调试”视图，选择配置并按 F5。所有配置都使用仓库的
 `.venv/bin/python`，以项目根目录为工作目录，并开启 `asyncio` 调试模式。
-这些 F5 配置还会设置 `DSH_CORDIS_LOG=1` 和 `DSH_CORDIS_LOG_LEVEL=DEBUG`，因此终端会同步
-显示插件挂载、Fiber 状态变化、依赖解析、服务变化与事件调度。普通测试和应用运行默认
-不输出这些诊断日志；开关与运行时 API 见 [`dsh.cordis` 文档](../dsh/cordis/README.md#诊断日志)。
+这些 F5 配置还会设置 `DSH_CORDIS_LOG=1`，因此终端会显示插件挂载、依赖等待、激活 epoch、
+Fiber 状态变化和服务提供/移除这条主线。普通测试和应用运行默认不输出这些诊断日志；
+开关与运行时 API 见 [`dsh.cordis` 文档](../dsh/cordis/README.md#诊断日志)。
 
 `Harness: 当前阶段` 是长期稳定入口：它运行根 `tests/` 下所有跨插件组装与应用级测试。
 随着 Harness 迭代，这个名字和启动方式保持不变，新阶段把自己的最小可运行竖切加入根
