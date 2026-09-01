@@ -39,6 +39,24 @@
       }
     },
     {
+      "name": "阶段 M2: 无工具轮次",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pytest",
+      "args": [
+        "tests/test_m2_tool_free_turn.py",
+        "-vv",
+        "-s"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "env": {
+        "PYTHONASYNCIODEBUG": "1",
+        "DSH_CORDIS_LOG": "1"
+      }
+    },
+    {
       "name": "Cordis: 全部基线",
       "type": "debugpy",
       "request": "launch",

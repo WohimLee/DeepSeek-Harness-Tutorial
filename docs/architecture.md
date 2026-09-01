@@ -7,8 +7,8 @@
 ## 当前边界
 
 目前已实现 `dsh.cordis` 及其声明式配置 loader、最小 `dsh.llm` adapter registry 与流协议、
-确定性 `dsh.llm_scripted` Provider，以及只追加的内存 `dsh.session` 和消息投影。System
-Prompt、Agent、Tools、Agent Loop 和应用组装仍处于规划阶段，具体进度以
+确定性 `dsh.llm_scripted` Provider、只追加的内存 `dsh.session` 和消息投影，以及 M2 的
+System Prompt、Agent Registry 与无工具 Agent Loop。Tools、工具续跑和应用组装仍处于规划阶段，具体进度以
 [`porting.md`](porting.md) 为准。
 
 ## 分层
@@ -48,15 +48,16 @@ Fiber 的 EffectScope 所有，因此父卸载会递归卸载整棵子树。父�
 它不同于 `inject` 服务依赖和 Definition / Provider / Consumer 架构关系。具体使用规则见
 [插件开发规范的父子插件章节](plugin-development.md#34-父子插件与-fiber-所有权)。
 
-## Harness 核心（规划中）
+## Harness 核心（M2 主干已实现）
 
 核心由五个可独立测试与替换的部分构成：
 
 - Session：仅追加事件日志，是回放、持久化和模型历史投影的事实来源。
-- System Prompt：从插件贡献的片段与工具 schema 组装请求上下文。
-- Tools：作用域化注册表，以及 pre-execute → execute → post-execute 流水线。
-- Agent：活跃实例、inbox、状态和实时 `agent/*` 扩展事件。
-- Agent Loop：一次轮次内驱动模型请求、工具执行与续跑的默认实现。
+- System Prompt：已支持生命周期化 section、确定性排序和组装 waterfall；动态 context、变量、
+  工具 schema 与 scope shadowing 后续补齐。
+- Tools：规划中的作用域化注册表，以及 pre-execute → execute → post-execute 流水线。
+- Agent：已支持活跃实例、next-turn inbox、状态、取消和可等待 idle。
+- Agent Loop：已支持无工具单 step 轮次、流记录、失败/取消收尾；工具执行与续跑属于 M3。
 
 一个 step 是一次模型请求及其工具调用；一个 turn 包含零或多个 step。持久事实写入 Session，
 进行中的拦截和观察使用实时 Agent/能力事件，二者不得混用。

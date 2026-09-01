@@ -21,9 +21,9 @@
 
 | 里程碑 | 上游范围 | Python 落点 | 可运行结果 | 状态 |
 |---|---|---|---|---|
-| M0 Cordis 基线 | vendored Cordis + loader | `dsh/cordis/` | 17 个生命周期、事件、Effect 与 Loader 契约测试 | 已验证 |
+| M0 Cordis 基线 | vendored Cordis + loader | `dsh/cordis/` | 生命周期、事件、Effect 与 Loader 契约测试 | 已验证 |
 | M1 日志与模型协议 | `core/session`, `llm/llm` | `dsh/session`, `dsh/llm`, `dsh/llm_scripted` | scripted 文本的 raw chunk/final message 写入并投影 | 已验证 |
-| M2 无工具轮次 | `system-prompt`, `agent`, `agent-loop` | 对应 `dsh.*` 模块 | 用户输入到流式最终回复 | 待分析 |
+| M2 无工具轮次 | `system-prompt`, `agent`, `agent-loop` | `dsh.system_prompt`, `dsh.agent`, `dsh.agent_loop` | 用户输入到流式最终回复 | 已验证 |
 | M3 工具续跑 | `core/tools`, tool-call loop | `dsh/tools`, `dsh/agent_loop` | scripted tool call → echo → 最终回复 | 待分析 |
 | M4 可执行主干 | agent-spine demo、headless boot | `dsh/harness`, `dsh/app` | keyless CLI + transcript fixture | 待分析 |
 | M4 真实模型叶子 | DeepSeek LLM provider | `dsh/llm/deepseek` | 可选真实 API 端到端任务 | 待分析 |
@@ -62,6 +62,26 @@ MVP 的验收场景固定为一次包含工具调用的 keyless transcript。这
 - 组装竖切：用户消息 → scripted stream → raw chunk + assistant message → 下一请求完全由日志投影。
 
 验证命令：`uv run pytest -q`（32 passed）、`uv run ruff check .`、`uv run mypy dsh`。
+
+### M2 验证记录
+
+- 上游来源：`packages/core/system-prompt/src/index.ts`、`packages/core/agent/`、
+  `packages/core/agent-loop/src/agent.ts` 及 `tests/loop.spec.ts`、`request-error.spec.ts`、
+  `cancel.spec.ts`；生命周期顺序对照 `docs/agent-lifecycle.md`。
+- System Prompt（Consumer/registry）：具名 section 注册、确定性 `(order, name)` 排序、persona
+  配置、组装 waterfall 与贡献随 Fiber 撤销。
+- Agent（Definition/registry）：稳定 identity/options、next-turn inbox、状态、取消、可等待 idle，
+  Agent 注册随创建它的 Agent Loop Fiber 撤销。
+- Agent Loop（Consumer）：`turn/start → step/start → user/message → assistant/chunk* →
+  assistant/message → step/end → turn/end`；下一请求消息完全来自 Session 投影。
+- 失败与取消：Provider in-band failure 关闭 step/turn 且不写成功 assistant message；取消产生
+  `aborted` 收尾；卸载插件会取消并等待活动 driver task 静止。
+- 有意延期：M2 每个 turn 只有一个 step；tools、steering、请求重试、完整 prompt scope/context、
+  request header 持久化分别由 M3 及后续阶段实现。
+- 组装竖切：[`tests/test_m2_tool_free_turn.py`](../tests/test_m2_tool_free_turn.py)，可由
+  `Harness: 当前阶段` 与 `阶段 M2: 无工具轮次` 按 F5 调试。
+
+验证命令：`uv run pytest -q`（44 passed）、`uv run ruff check dsh tests`、`uv run mypy dsh`。
 
 ## 已知差异
 

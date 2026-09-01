@@ -8,6 +8,7 @@ from .events import EventsService, is_bailed
 from .fiber import Fiber, FiberState
 from .logger import is_cordis_logging_enabled, logger, set_cordis_logging
 from .model import inject
+from .plugin import PluginDefinition, define_plugin
 from .service import Service
 from .typing import PluginContext, PluginFunction, PluginObject
 
@@ -25,11 +26,13 @@ __all__ = [
     "Fiber",
     "FiberState",
     "PluginContext",
+    "PluginDefinition",
     "PluginFunction",
     "PluginObject",
     "Service",
     "ValidationError",
     "__version__",
+    "define_plugin",
     "inject",
     "is_bailed",
     "is_cordis_logging_enabled",

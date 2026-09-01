@@ -64,7 +64,25 @@ Context
 - `dsh/llm/assembler.py` 的 `BlockAssembler.push()`。
 - `dsh/session/service.py` 的 `Session.append()` 和 `derive_messages()`。
 
-### 4. `Pytest: 当前文件`
+### 4. `阶段 M2: 无工具轮次`
+
+这个场景把 M1 测试中的手工编排收进 Agent Loop：
+
+```text
+Agent.followup()
+  → AgentLoop._drive() / _run_turn()
+  → Session turn/step/user 事件
+  → SystemPrompt.assemble()
+  → LlmRuntime.stream()
+  → Session raw chunks / assistant message / turn 收尾
+```
+
+推荐在 `dsh/agent_loop/service.py` 的 `_wake()`、`_run_turn()`、失败 finish 分支与 `_cleanup()`
+设置断点；观察 `agent.status`、`agent.inbox`、`agent.last_error`、`agent.session.events`、
+`request.messages` 和 `assembler.finish`。正常、Provider 失败和取消/卸载路径可在插件测试中用
+`Pytest: 当前文件` 调试。
+
+### 5. `Pytest: 当前文件`
 
 打开任意测试文件后选择此配置按 F5，可调试整个当前文件。若只想调试单个测试，推荐在
 VS Code 测试面板中点击该测试旁的“调试测试”按钮。

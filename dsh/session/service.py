@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import time
+from collections.abc import Callable
 from typing import cast
 from uuid import uuid4
 
@@ -40,9 +41,14 @@ _EVENT_DATA_TYPES: dict[EventType, type[object]] = {
 class Session:
     """One append-only event log whose model history is a projection."""
 
-    def __init__(self, session_id: SessionId) -> None:
+    def __init__(
+        self,
+        session_id: SessionId,
+        publish: Callable[[Session, SessionEvent], None] | None = None,
+    ) -> None:
         self.id = session_id
         self._events: list[SessionEvent] = []
+        self._publish = publish
 
     @property
     def events(self) -> tuple[SessionEvent, ...]:
@@ -59,6 +65,8 @@ class Session:
         self._validate_message_event(event_type, data)
         event = SessionEvent(event_type, len(self._events), time.time_ns() // 1_000_000, data)
         self._events.append(event)
+        if self._publish is not None:
+            self._publish(self, event)
         return event
 
     @staticmethod
@@ -115,7 +123,10 @@ class SessionStore(Service):
         resolved = session_id or SessionId(str(uuid4()))
         if resolved in self._sessions:
             raise ValueError(f"session {resolved!r} already exists")
-        session = Session(resolved)
+        session = Session(
+            resolved,
+            lambda current, event: self.context.emit("session/event", current, event),
+        )
         self._sessions[resolved] = session
         return session
 
