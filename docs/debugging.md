@@ -59,10 +59,10 @@ Context
 建议在这些位置设置断点：
 
 - `tests/test_m1_log_projection.py` 的每个 `session.append(...)`。
-- `dsh/llm/service.py` 的 `LlmRuntime.stream()` 与 `_stream()`。
-- `dsh/llm_scripted/plugin.py` 的 `ScriptedAdapter.stream()`。
-- `dsh/llm/assembler.py` 的 `BlockAssembler.push()`。
-- `dsh/session/service.py` 的 `Session.append()` 和 `derive_messages()`。
+- `dsh/core/model/llm/service.py` 的 `LlmRuntime.stream()` 与 `_stream()`。
+- `dsh/plugins/providers/model/llm_scripted/plugin.py` 的 `ScriptedAdapter.stream()`。
+- `dsh/core/model/llm/assembler.py` 的 `BlockAssembler.push()`。
+- `dsh/core/runtime/session/service.py` 的 `Session.append()` 和 `derive_messages()`。
 
 ### 4. `阶段 M2: 无工具轮次`
 
@@ -77,7 +77,7 @@ Agent.followup()
   → Session raw chunks / assistant message / turn 收尾
 ```
 
-推荐在 `dsh/agent_loop/service.py` 的 `_wake()`、`_run_turn()`、失败 finish 分支与 `_cleanup()`
+推荐在 `dsh/core/runtime/agent_loop/service.py` 的 `_wake()`、`_run_turn()`、失败 finish 分支与 `_cleanup()`
 设置断点；观察 `agent.status`、`agent.inbox`、`agent.last_error`、`agent.session.events`、
 `request.messages` 和 `assembler.finish`。正常、Provider 失败和取消/卸载路径可在插件测试中用
 `Pytest: 当前文件` 调试。
@@ -97,7 +97,7 @@ VS Code 测试面板中点击该测试旁的“调试测试”按钮。
 3. 在本文件补充调用链、推荐断点和关键观察变量。
 4. 在 `docs/porting.md` 的阶段验证记录中写明对应测试和 F5 配置名称。
 
-插件内部的局部行为仍放在 `dsh/<plugin>/tests/`，用 `Pytest: 当前文件` 或测试面板调试；
+插件内部的局部行为仍放在对应插件包的 `tests/`，用 `Pytest: 当前文件` 或测试面板调试；
 只有跨插件、能说明当前 Harness 整体进展的场景才进入根 `tests/`。
 
 ## 调试器里看什么

@@ -41,7 +41,7 @@ Loader 配置始终引用显式属性：
 
 ```yaml
 - id: echo-tool
-  module: dsh.tool_echo:plugin
+  module: dsh.core.runtime.tool_echo:plugin
   config:
     prefix: "Echo: "
 ```
@@ -165,11 +165,16 @@ def apply(self, ctx: Context, config: Config) -> None:
 
 ## 3. 官方插件目录组织
 
+本节描述当前已实施的插件 ABI 和三分区目录布局；归类规则及未来候选结构见
+[包目录设计](package-layout.md)。
+
 本仓库发布一个 `deepseek-harness-py` wheel，而不是为每个插件发布一个 distribution。
-每个具有独立配置或生命周期的官方插件对应一个顶层 import package：
+`dsh.cordis` 是插件运行时，默认产品插件进入 `dsh.core.<domain>`，可选 Provider、集成和
+扩展进入 `dsh.plugins.<category>`。每个具有独立配置或生命周期的官方插件仍对应自己的
+import package：
 
 ```text
-dsh/<plugin_name>/
+dsh/<zone>/<domain>/<plugin_name>/
   __init__.py       唯一公共入口；导出 plugin 和明确支持的公共 API
   plugin.py         插件组装或入口 class/object
   config.py         Config 与配置错误；无配置时省略
@@ -193,7 +198,7 @@ dsh/<plugin_name>/
 这是可选文件清单，不是要求每个插件生成所有文件。小插件保持紧凑，例如：
 
 ```text
-dsh/tool_echo/
+dsh/core/runtime/tool_echo/
   __init__.py
   plugin.py
   config.py
@@ -205,18 +210,19 @@ dsh/tool_echo/
 
 复杂模块按职责拆文件，不按“helpers”“utils”“manager”一类含混名称堆放代码。`models.py`
 包含运行时 dataclass/enum；只有纯类型 Protocol/TypeAlias 才进入 `typing.py`。共享工具只有在
-至少两个当前 Consumer 需要且依赖方向合理时，才提取到 `dsh.util_*`，不建立通用 `utils.py`。
+至少两个当前 Consumer 需要且依赖方向合理时，才提取到所属分区的 `internal`，不在 `dsh`
+顶层建立通用 `utils.py`。
 
 ### 3.1 命名映射
 
 | 概念 | 规范 | 示例 |
 |---|---|---|
-| Python package | snake_case | `dsh.llm_deepseek` |
+| Python package | 分区路径 + snake_case | `dsh.core.model.llm_deepseek` |
 | 插件诊断名 | kebab-case | `llm-deepseek` |
 | Context 服务键 | camelCase 或既有稳定键 | `llm`, `systemPrompt` |
 | Service / model class | PascalCase | `DeepSeekProvider` |
 | 配置类型 | `Config` | `Config` |
-| Loader 引用 | `<module>:plugin` | `dsh.llm_deepseek:plugin` |
+| Loader 引用 | `<module>:plugin` | `dsh.core.model.llm_deepseek:plugin` |
 
 服务键与上游语义对应时保留上游键，避免移植期间出现两套词汇；Python 属性不适合直接表达
 的 camelCase key 通过 `ctx.get("systemPrompt")` 或服务绑定访问，不能悄悄改名造成组合不兼容。
@@ -226,9 +232,8 @@ dsh/tool_echo/
 Definition、Provider、Consumer 需要独立演进或具有不同依赖时，使用独立插件包：
 
 ```text
-dsh/shell/          # Service Definition: ctx.shell 请求/结果/错误协议
-dsh/shell_local/    # Provider: 本机 subprocess 实现，inject = ("shell",) 或注册到定义服务
-dsh/tool_shell/     # Consumer: 模型工具 schema，inject = ("shell", "tools")
+dsh/core/execution/shell/               # 默认 Shell seam、Provider 与 Consumer
+dsh/plugins/providers/shell/shell_raw/  # 可选非沙箱 Provider
 ```
 
 Provider 命名必须说明厂商、协议、环境或机制，例如 `llm_deepseek`、`session_sqlite`、
@@ -243,7 +248,7 @@ Provider 命名必须说明厂商、协议、环境或机制，例如 `llm_deeps
 组合插件只挂载子插件并转发自己拥有的配置：
 
 ```text
-dsh/harness/
+dsh/core/application/bundle/headless/
   __init__.py
   plugin.py
   config.py

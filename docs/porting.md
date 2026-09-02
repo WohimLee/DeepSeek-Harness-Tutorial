@@ -22,12 +22,13 @@
 | 里程碑 | 上游范围 | Python 落点 | 可运行结果 | 状态 |
 |---|---|---|---|---|
 | M0 Cordis 基线 | vendored Cordis + loader | `dsh/cordis/` | 生命周期、事件、Effect 与 Loader 契约测试 | 已验证 |
-| M1 日志与模型协议 | `core/session`, `llm/llm` | `dsh/session`, `dsh/llm`, `dsh/llm_scripted` | scripted 文本的 raw chunk/final message 写入并投影 | 已验证 |
-| M2 无工具轮次 | `system-prompt`, `agent`, `agent-loop` | `dsh.system_prompt`, `dsh.agent`, `dsh.agent_loop` | 用户输入到流式最终回复 | 已验证 |
-| M3 工具续跑 | `core/tools`, tool-call loop | `dsh/tools`, `dsh/agent_loop` | scripted tool call → echo → 最终回复 | 待分析 |
-| M4 可执行主干 | agent-spine demo、headless boot | `dsh/harness`, `dsh/app` | keyless CLI + transcript fixture | 待分析 |
-| M4 真实模型叶子 | DeepSeek LLM provider | `dsh/llm/deepseek` | 可选真实 API 端到端任务 | 待分析 |
+| M1 日志与模型协议 | `core/session`, `llm/llm` | `dsh.core.runtime.session`, `dsh.core.model.llm`, `dsh.plugins.providers.model.llm_scripted` | scripted 文本的 raw chunk/final message 写入并投影 | 已验证 |
+| M2 无工具轮次 | `system-prompt`, `agent`, `agent-loop` | `dsh.core.runtime.system_prompt`, `dsh.core.runtime.agent`, `dsh.core.runtime.agent_loop` | 用户输入到流式最终回复 | 已验证 |
+| M3 工具续跑 | `core/tools`, tool-call loop | `dsh.core.runtime.tools`, `dsh.core.runtime.agent_loop` | scripted tool call → echo → 最终回复 | 待分析 |
+| M4 可执行主干 | agent-spine demo、headless boot | `dsh.core.application.bundle`, `dsh.core.application.boot` | keyless CLI + transcript fixture | 待分析 |
+| M4 真实模型叶子 | DeepSeek LLM provider | `dsh.core.model.llm_deepseek` | 可选真实 API 端到端任务 | 待分析 |
 | M5+ 插件迭代 | persistence/fs/shell/approval/skill 等 | 对应能力模块 | 每项形成完整 capability seam | 待分析 |
+| 包目录三分区 | Python 包物理布局 | `dsh.cordis` / `dsh.core` / `dsh.plugins` | import、测试、构建与文档一次性迁移 | 已验证 |
 | 后期入口 | API、SDK、Web Client | 待定 | 核心 headless 稳定后评估 | 暂不移植 |
 
 ### MVP 边界
@@ -39,6 +40,9 @@ MVP 包含内存 Session、抽象流式 LLM、scripted Provider、system prompt�
 MVP 的验收场景固定为一次包含工具调用的 keyless transcript。这个场景打通之前，不提前
 建立 M5+ 能力的空目录或公共接口。
 
+包目录三分区已经实施，归类规则见 [`package-layout.md`](package-layout.md)。旧的顶层
+`dsh.<plugin_name>` import 路径未保留兼容层；后续模块直接进入对应分区。
+
 ### M0 验证记录
 
 - 服务依赖：Provider 出现、移除与替换驱动 Consumer 激活和卸载。
@@ -48,7 +52,7 @@ MVP 的验收场景固定为一次包含工具调用的 keyless transcript。这
 - Loader：entry children、禁用子树、原子叶配置更新、无效配置保留旧激活。
 - 配置：安全 YAML、环境变量、include cycle 与嵌套 overlay deep merge。
 
-验证命令：`uv run pytest dsh/cordis/tests -q`（17 passed）、`uv run ruff check .`、
+验证命令：`uv run pytest dsh/cordis/tests -q`（20 passed）、`uv run ruff check dsh tests`、
 `uv run mypy dsh`。
 
 ### M1 验证记录
@@ -82,6 +86,19 @@ MVP 的验收场景固定为一次包含工具调用的 keyless transcript。这
   `Harness: 当前阶段` 与 `阶段 M2: 无工具轮次` 按 F5 调试。
 
 验证命令：`uv run pytest -q`（44 passed）、`uv run ruff check dsh tests`、`uv run mypy dsh`。
+
+### 包目录三分区验证记录
+
+- `dsh.cordis` 只保留不认识 Harness 产品语义的插件运行时。
+- M0–M2 默认能力迁入 `dsh.core.model` 与 `dsh.core.runtime`；scripted LLM 作为完整、可选的
+  keyless Provider 迁入 `dsh.plugins.providers.model`。
+- 所有 Python import、包级测试、根集成测试、插件 README、架构文档和 F5 路径一次性更新；
+  没有旧 import 兼容包。
+- 远期 Gateway、Messaging 等深层目录仍是候选分类；对应能力进入迁移台账前不预建目录，
+  也不视为已交付 API。
+
+验证命令：`uv run pytest -q`（45 passed）、`uv run ruff check dsh tests`、`uv run mypy dsh`、
+wheel 构建及安装后 import smoke test。
 
 ## 已知差异
 

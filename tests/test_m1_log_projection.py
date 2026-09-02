@@ -3,9 +3,14 @@
 from typing import cast
 
 from dsh.cordis import Context
-from dsh.llm import BlockAssembler, GenerateRequest, LlmRuntime, TextBlock, create_user_message
-from dsh.llm_scripted import plugin as scripted_plugin
-from dsh.session import (
+from dsh.core.model.llm import (
+    BlockAssembler,
+    GenerateRequest,
+    LlmRuntime,
+    TextBlock,
+    create_user_message,
+)
+from dsh.core.runtime.session import (
     AssistantChunkData,
     AssistantMessageData,
     SessionId,
@@ -15,7 +20,8 @@ from dsh.session import (
     TurnEndData,
     TurnStartData,
 )
-from dsh.session import plugin as session_plugin
+from dsh.core.runtime.session import plugin as session_plugin
+from dsh.plugins.providers.model.llm_scripted import plugin as scripted_plugin
 
 
 async def test_scripted_response_round_trips_through_session_log() -> None:

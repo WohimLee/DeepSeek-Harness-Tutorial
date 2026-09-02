@@ -40,15 +40,15 @@ user input
 
 | Python 模块 | 角色 | MVP 范围 |
 |---|---|---|
-| `dsh.session` | Definition + 内存 Provider | 仅追加事件、读取、消息投影；暂不做磁盘持久化与 fork |
-| `dsh.llm` | Service Definition | message/content/tool-call 词汇、流式请求协议、稳定 Provider 错误 |
-| `dsh.llm_scripted` | 测试 Provider | scripted 流与请求捕获，不进入生产默认组合 |
-| `dsh.system_prompt` | Consumer/registry | 有序 prompt section 与工具 schema 组装 |
-| `dsh.tools` | Definition + Consumer | 生命周期化注册、参数校验、pre/execute/post 流水线、最终结果 |
-| `dsh.agent` | Definition + registry | 单 Agent、inbox、状态与 `agent/*` 事件 |
-| `dsh.agent_loop` | Consumer | 串行 step、工具续跑、取消与错误收尾 |
-| `dsh.harness` | composition | 挂载共享主干，不选择具体 LLM 后端 |
-| `dsh.app.headless` | entry adapter | 单次任务入口与确定性 transcript 输出 |
+| `dsh.core.runtime.session` | Definition + 内存 Provider | 仅追加事件、读取、消息投影；暂不做磁盘持久化与 fork |
+| `dsh.core.model.llm` | Service Definition | message/content/tool-call 词汇、流式请求协议、稳定 Provider 错误 |
+| `dsh.plugins.providers.model.llm_scripted` | 测试 Provider | scripted 流与请求捕获，不进入生产默认组合 |
+| `dsh.core.runtime.system_prompt` | Consumer/registry | 有序 prompt section 与工具 schema 组装 |
+| `dsh.core.runtime.tools` | Definition + Consumer | 生命周期化注册、参数校验、pre/execute/post 流水线、最终结果 |
+| `dsh.core.runtime.agent` | Definition + registry | 单 Agent、inbox、状态与 `agent/*` 事件 |
+| `dsh.core.runtime.agent_loop` | Consumer | 串行 step、工具续跑、取消与错误收尾 |
+| `dsh.core.application.bundle` | composition | 挂载共享主干，不选择具体 LLM 后端 |
+| `dsh.core.application.boot` | entry adapter | 单次任务入口与确定性 transcript 输出 |
 
 MVP 内的“单 Agent”是组装限制，不写死在服务协议中。事件和标识从第一版保留 `session_id`、
 `agent_id`、`turn_id` 与 `step_id`，避免后续多会话或多 Agent 需要重写日志语义。
@@ -73,7 +73,7 @@ MVP 内的“单 Agent”是组装限制，不写死在服务协议中。事件�
 
 #### M1：日志与模型协议
 
-实现 `dsh.session`、`dsh.llm` 和 scripted Provider。使用一次固定文本响应证明用户消息、流式
+实现 `dsh.core.runtime.session`、`dsh.core.model.llm` 和 scripted Provider。使用一次固定文本响应证明用户消息、流式
 片段和最终 assistant 消息都进入日志，并能从日志投影出下一次 LLM 请求。
 
 #### M2：一次无工具轮次
@@ -88,7 +88,7 @@ MVP 内的“单 Agent”是组装限制，不写死在服务协议中。事件�
 
 #### M4：主干组合与 headless
 
-实现 `dsh.harness` 和单次 headless 入口。提供一个 keyless 示例配置和 transcript fixture，
+实现 `dsh.core.application.bundle` 和单次 headless 入口。提供一个 keyless 示例配置和 transcript fixture，
 证明空工作区从配置加载到正常退出；再接入首个 DeepSeek Provider 插件，但真实 API 测试在
 缺少凭据时明确跳过。
 

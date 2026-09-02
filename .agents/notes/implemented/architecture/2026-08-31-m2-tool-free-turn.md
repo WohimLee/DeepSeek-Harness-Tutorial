@@ -4,8 +4,8 @@ Status: implemented
 
 ## Decision
 
-M2 采用三个独立生命周期单元：`dsh.system_prompt` 提供 `systemPrompt` registry，
-`dsh.agent` 提供 `agents` registry 与 Agent 值，`dsh.agent_loop` 作为 Consumer 提供
+M2 采用三个独立生命周期单元：`dsh.core.runtime.system_prompt` 提供 `systemPrompt` registry，
+`dsh.core.runtime.agent` 提供 `agents` registry 与 Agent 值，`dsh.core.runtime.agent_loop` 作为 Consumer 提供
 `agentLoop`。Agent Loop 只从 Session 投影构造模型消息，不保存旁路历史。
 
 每个 M2 turn 固定一个 step。成功 Provider call 记录 raw chunk 与 assistant message；in-band
@@ -22,4 +22,4 @@ M2 采用三个独立生命周期单元：`dsh.system_prompt` 提供 `systemProm
 - 上游 `packages/core/agent-loop/tests/loop.spec.ts` 的简单轮次和事件边界。
 - 上游 `packages/core/agent-loop/src/agent.ts` 的流组装与 error/aborted finish 分支。
 - 上游 `docs/agent-lifecycle.md` 的 durable Session 与实时 `agent/*` 分工。
-- Python `dsh/agent_loop/tests/test_service.py` 与 `tests/test_m2_tool_free_turn.py`。
+- Python `dsh/core/runtime/agent_loop/tests/test_service.py` 与 `tests/test_m2_tool_free_turn.py`。

@@ -6,8 +6,9 @@
 
 ## 当前边界
 
-目前已实现 `dsh.cordis` 及其声明式配置 loader、最小 `dsh.llm` adapter registry 与流协议、
-确定性 `dsh.llm_scripted` Provider、只追加的内存 `dsh.session` 和消息投影，以及 M2 的
+目前已实现 `dsh.cordis` 及其声明式配置 loader、`dsh.core.model.llm` adapter registry 与
+流协议、`dsh.plugins.providers.model.llm_scripted` 确定性 Provider、只追加的内存 Session
+和消息投影，以及 M2 的
 System Prompt、Agent Registry 与无工具 Agent Loop。Tools、工具续跑和应用组装仍处于规划阶段，具体进度以
 [`porting.md`](porting.md) 为准。
 
@@ -75,9 +76,11 @@ Fiber 的 EffectScope 所有，因此父卸载会递归卸载整棵子树。父�
 默认值与配置归拥有它的 Provider；Consumer 不猜测 Provider 行为。部署可变参数来自经验证的
 插件配置，协议常量和安全不变量可以固定在代码中。
 
-官方插件采用一个 distribution 下的独立 `dsh.<plugin_name>` import package，并统一导出
-`plugin` 入口。Definition、Provider、Consumer 的拆包条件、标准文件树、配置 ABI、外部
-插件布局和验收清单见[插件开发规范](plugin-development.md)。
+官方产品包采用 `dsh.cordis`、`dsh.core` 和 `dsh.plugins` 三个一级分区。每个独立插件仍从
+自身包统一导出 `plugin` 入口；目录嵌套不产生 Fiber 父子关系。Definition、Provider、
+Consumer 的拆包条件、标准文件树、配置 ABI、外部插件布局和验收清单见
+[插件开发规范](plugin-development.md)，当前归类规则和未来候选结构见
+[包目录设计](package-layout.md)。
 
 ## 事件与状态
 

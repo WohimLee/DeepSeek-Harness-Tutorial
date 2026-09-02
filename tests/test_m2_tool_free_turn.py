@@ -2,17 +2,17 @@
 
 from typing import cast
 
-from dsh.agent import AgentOptions
-from dsh.agent import plugin as agent_plugin
-from dsh.agent_loop import AgentLoop
-from dsh.agent_loop import plugin as loop_plugin
 from dsh.cordis import Context
-from dsh.llm import TextBlock, create_user_message
-from dsh.llm import plugin as llm_plugin
-from dsh.llm_scripted import plugin as scripted_plugin
-from dsh.session import SessionId
-from dsh.session import plugin as session_plugin
-from dsh.system_prompt import plugin as prompt_plugin
+from dsh.core.model.llm import TextBlock, create_user_message
+from dsh.core.model.llm import plugin as llm_plugin
+from dsh.core.runtime.agent import AgentOptions
+from dsh.core.runtime.agent import plugin as agent_plugin
+from dsh.core.runtime.agent_loop import AgentLoop
+from dsh.core.runtime.agent_loop import plugin as loop_plugin
+from dsh.core.runtime.session import SessionId
+from dsh.core.runtime.session import plugin as session_plugin
+from dsh.core.runtime.system_prompt import plugin as prompt_plugin
+from dsh.plugins.providers.model.llm_scripted import plugin as scripted_plugin
 
 
 async def test_user_input_reaches_streamed_final_response() -> None:

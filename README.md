@@ -9,7 +9,7 @@ Loop、能力提供方和应用入口都由插件组合。这个仓库延续“�
 `asyncio`、类型标注和 Python 原生协议表达相同的生命周期与扩展机制。
 
 > 当前状态：最小 Harness 主干建设阶段。`dsh.cordis` 已通过 Harness 生命周期基线，
-> `dsh.llm`、`dsh.llm_scripted` 与内存 `dsh.session` 已完成首条 keyless 日志投影竖切，
+> `dsh.core.model.llm`、可选的 scripted Provider 与内存 Session 已完成首条 keyless 日志投影竖切，
 > System Prompt、Agent 与无工具 Agent Loop 已完成 M2 流式轮次。
 > 项目尚未承诺稳定 API 或数据格式兼容性。
 
@@ -30,15 +30,15 @@ Loop、能力提供方和应用入口都由插件组合。这个仓库延续“�
 
 ```text
 dsh/
-  cordis/             Python Cordis 运行时与声明式配置 loader
-  agent/              Agent inbox、状态与 registry
-  agent_loop/         默认无工具 Agent Loop Consumer
-  llm/                LLM seam 与 adapter registry
-  llm_scripted/       确定性 keyless Provider
-  system_prompt/      有序 System Prompt registry
-  tools/              工具注册与执行流水线（规划中）
-  session/            内存会话事件日志与消息投影
-  app/                CLI / headless 组装入口（规划中）
+  cordis/                         Python Cordis 运行时与声明式配置 loader
+  core/
+    model/llm/                    LLM seam 与 adapter registry
+    runtime/agent/                Agent inbox、状态与 registry
+    runtime/agent_loop/           默认无工具 Agent Loop Consumer
+    runtime/session/              内存会话事件日志与消息投影
+    runtime/system_prompt/        有序 System Prompt registry
+  plugins/
+    providers/model/llm_scripted/ 确定性 keyless Provider
 tests/                 单元、契约和集成测试
 docs/architecture.md   Python 目标架构与关键不变量
 docs/porting.md        TypeScript → Python 迁移策略与进度
@@ -47,6 +47,7 @@ AGENTS.md              仓库级工程约束
 ```
 
 实际存在的模块以源码为准；标注“规划中”的目录会在对应能力开始迁移时创建。
+三分区的归类规则和候选扩展目录见[包目录设计](docs/package-layout.md)。
 
 ## 快速开始
 
