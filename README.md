@@ -1,107 +1,21 @@
-# DeepSeek Harness Python
+# DeepSeek Harness 学习笔记
 
-DeepSeek Harness Python（`deepseek-harness-py`）是对原 TypeScript 项目
-`deepseek-harness` 的 Python 复现。项目以原 TypeScript
-实现的外部行为和架构约束为基准，而不是逐行翻译源码。
+这个仓库用于学习 DeepSeek Harness 和基于它构建的 Super-agent 研究原型。以官方源码、文档和测试为依据，沿着真实调用链弄清楚应用如何启动、插件如何协作、一轮 Agent 请求如何执行，以及仓库事件如何触发和推进一项编程任务。
 
-原项目是一个由 Cordis 驱动的插件化 Agent Harness：模型适配器、会话、工具、Agent
-Loop、能力提供方和应用入口都由插件组合。这个仓库延续“一切皆插件”的设计，并使用
-`asyncio`、类型标注和 Python 原生协议表达相同的生命周期与扩展机制。
+- **DeepSeek Harness**：学习 profile、Cordis 插件、会话、模型调用和 Agent Loop。[上游仓库](https://github.com/deepseek-ai/deepseek-harness) · [官方架构文档](https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/architecture.md)
+- **Super-agent**：学习如何把 GitHub 和可选的飞书接入做成 Harness 插件包，为单个 GitHub 仓库处理任务。[上游仓库](https://github.com/deepseek-ai/dsh-superagent-prototype)
 
-> 当前状态：最小 Harness 主干建设阶段。`dsh.cordis` 已通过 Harness 生命周期基线，
-> `dsh.core.model.llm`、可选的 scripted Provider 与内存 Session 已完成首条 keyless 日志投影竖切，
-> System Prompt、Agent 与无工具 Agent Loop 已完成 M2 流式轮次。
-> 项目尚未承诺稳定 API 或数据格式兼容性。
+## 学习目标
 
-## 目标
+1. **应用入口与启动**。梳理请求从哪里进入，以及 profile 和 bundle 如何组装运行所需的插件。
+2. **Cordis 插件机制**。理解插件如何挂载和卸载，如何提供与依赖服务，以及事件和副作用如何随插件生命周期管理。
+3. **Agent 运行链路**。跟踪一轮请求从进入会话到构造模型上下文、接收流式响应、执行工具，再到记录结果的过程。
+4. **Super-agent 任务编排**。跟踪一条 GitHub Issue 评论如何经过事件接入和授权、触发或续接 Ticket、交给 Worker 会话执行，再回到原讨论串回复。梳理这些步骤分别由 Super-agent 和 Harness 的哪些模块负责。
 
-- 保持原项目的关键运行语义：插件生命周期、服务注入、可逆副作用和事件流水线。
-- 建立可替换的 Agent Harness 能力层，而不是把行为集中到不可扩展的核心类中。
-- 用契约测试和端到端场景证明 Python 与 TypeScript 基准实现的行为一致。
-- 提供符合 Python 生态习惯的 API；不机械复制 TypeScript 类型系统和包布局。
+第一阶段从一个调用入口入手，先跟完一轮无工具请求，再跟踪一次带工具调用的轮次。记录用到的上游版本、源码入口和关键事件，方便回看和复现。
 
-## 非目标
+第二阶段从白名单用户在 GitHub Issue 中 `@` Agent 的场景入手，顺着 **Source → Engine → Ticket → Worker → 回帖或 PR** 对照源码和测试。再看 PR 后续评论如何回到同一个 Ticket，以及主动规则在 `observe` 模式下如何记录候选任务。飞书作为另一种 Source，用来对照共用的任务链路。[架构与源码索引](https://github.com/deepseek-ai/dsh-superagent-prototype/blob/main/docs/007-architecture.md) · [安装与验证](https://github.com/deepseek-ai/dsh-superagent-prototype/blob/main/SETUP.md)
 
-- 不追求 TypeScript 源码的逐行或逐文件翻译。
-- 不在早期阶段保证与原项目所有内部 API、磁盘格式或 Web UI 完全兼容。
-- 不先实现前端；当前优先级是 Cordis、核心 Agent Loop、LLM、工具和会话能力。
+## 笔记
 
-## 仓库结构
-
-```text
-dsh/
-  cordis/                         Python Cordis 运行时与声明式配置 loader
-  core/
-    model/llm/                    LLM seam 与 adapter registry
-    runtime/agent/                Agent inbox、状态与 registry
-    runtime/agent_loop/           默认无工具 Agent Loop Consumer
-    runtime/session/              内存会话事件日志与消息投影
-    runtime/system_prompt/        有序 System Prompt registry
-  plugins/
-    providers/model/llm_scripted/ 确定性 keyless Provider
-tests/                 单元、契约和集成测试
-docs/architecture.md   Python 目标架构与关键不变量
-docs/porting.md        TypeScript → Python 迁移策略与进度
-.agents/               Agent 协作说明与决策记录
-AGENTS.md              仓库级工程约束
-```
-
-实际存在的模块以源码为准；标注“规划中”的目录会在对应能力开始迁移时创建。
-三分区的归类规则和候选扩展目录见[包目录设计](docs/package-layout.md)。
-
-## 快速开始
-
-项目要求 Python 3.12+，推荐使用 [uv](https://docs.astral.sh/uv/)：
-
-```bash
-uv sync --dev
-uv run pytest
-uv run ruff check .
-uv run mypy dsh
-```
-
-使用 VS Code 时可直接从“运行和调试”视图选择 Harness、Cordis 生命周期或当前 pytest
-文件后按 F5；断点建议和状态观察项见 [F5 调试指南](docs/debugging.md)。
-
-最小 Cordis 示例：
-
-```python
-import asyncio
-
-from dsh.cordis import Context
-
-
-async def main() -> None:
-    ctx = Context()
-
-    def plugin(plugin_ctx: Context, config: object) -> None:
-        plugin_ctx.provide("answer", 42)
-
-    fiber = ctx.plugin(plugin)
-    await fiber.wait()
-    assert ctx.answer == 42
-    await ctx.aclose()
-
-
-asyncio.run(main())
-```
-
-## 开发方式
-
-开始改动前先阅读 [AGENTS.md](AGENTS.md) 和
-[架构文档](docs/architecture.md)；新增插件遵循
-[插件开发规范](docs/plugin-development.md)。移植新模块时，在
-[迁移台账](docs/porting.md) 中记录来源、Python 落点和验证证据；非局部设计决策先在
-`.agents/notes/{lifecycle}/{class}/` 记录 Agent Note；重大未来方案从 `proposed/` 开始，
-随改动完成的决定记录在 `implemented/`。
-
-## 上游基准
-
-本地开发默认参考：
-
-```text
-/Users/wohim/Desktop/DockerVol/ubuntu22.04/wohim/AwsomeAgents/deepseek-harness
-```
-
-这个绝对路径只用于开发对照，不得写入运行时代码。若本地不存在该目录，仍应能安装、
-测试和运行本项目。
+- [调用方式](Tutorial/调用方式.md)记录了已有的对外调用入口和本地安装观察。笔记中的命令和运行状态对应当时观察的版本与环境。
